@@ -16,46 +16,46 @@ type Config struct {
 
 func LoadConfig() *Config {
 	cfg := &Config{
-		ServerPort:         getEnv("SERVER_PORT", "8080"),
+		ServerPort:         getEnv("SERVER_PORT", "1234"),
 		RedisURL:           getEnv("REDIS_URL", "redis://localhost:6379"),
 		UseRedis:           getEnvAsBool("USE_REDIS", false),
-		DefaultWindowSize:  getEnvAsDuration("DEFAULT_WINDOW_SIZE", 60*time.Second),
+		DefaultWindowSize:  getEnvAsDuration("DEFAULT_CYCLE_DURATION", 60*time.Second),
 		DefaultMaxRequests: getEnvAsInt("DEFAULT_MAX_REQUESTS", 100),
 	}
 
 	return cfg
 }
 
-func getEnv(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
+func getEnv(key, value string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
 	}
-	return defaultValue
+	return value
 }
 
-func getEnvAsBool(key string, defaultValue bool) bool {
-	if value := os.Getenv(key); value != "" {
-		if boolVal, err := strconv.ParseBool(value); err == nil {
+func getEnvAsBool(key string, value bool) bool {
+	if v := os.Getenv(key); v != "" {
+		if boolVal, err := strconv.ParseBool(v); err == nil {
 			return boolVal
 		}
 	}
-	return defaultValue
+	return value
 }
 
-func getEnvAsDuration(key string, defaultValue time.Duration) time.Duration {
-	if value := os.Getenv(key); value != "" {
-		if duration, err := time.ParseDuration(value); err == nil {
+func getEnvAsDuration(key string, value time.Duration) time.Duration {
+	if v := os.Getenv(key); v != "" {
+		if duration, err := time.ParseDuration(v); err == nil {
 			return duration
 		}
 	}
-	return defaultValue
+	return value
 }
 
-func getEnvAsInt(key string, defaultValue int) int {
-	if value := os.Getenv(key); value != "" {
-		if intVal, err := strconv.Atoi(value); err == nil {
+func getEnvAsInt(key string, value int) int {
+	if v := os.Getenv(key); v != "" {
+		if intVal, err := strconv.Atoi(v); err == nil {
 			return intVal
 		}
 	}
-	return defaultValue
+	return value
 }

@@ -9,10 +9,12 @@ Kebutuhan
         Redis: 6379
 
 1. Build & Run dengan Docker
+   
 docker-compose build --no-cache
+
 docker-compose up -d
 
-2. Running apps
+3. Running apps
 
     A. GET http://localhost:1234/ -> Health Check
 

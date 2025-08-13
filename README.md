@@ -3,16 +3,20 @@
 Rate Limiter (Echo + Redis) — Docker Setup
 
 Kebutuhan
+
     Docker & Docker Compose
+    
     Port default:
+    
         App: 1234
+        
         Redis: 6379
 
 1. Build & Run dengan Docker
    
-docker-compose build --no-cache
+    docker-compose build --no-cache
 
-docker-compose up -d
+    docker-compose up -d
 
 3. Running apps
 

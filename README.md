@@ -16,11 +16,15 @@ docker-compose build --no-cache
 docker-compose up -d
 
 3. Running apps
-A. GET http://localhost:1234/ -> Health Check 
+
+A. GET http://localhost:1234/ -> Health Check
+
 B. GET http://localhost:1234/api/v1/rate-limit/0101 -> Check Rate Limit
+
 C. PUT http://localhost:1234/api/v1/rate-limit/0101 -> Configure Rate Limit per Client
 {
   "max_requests": 5,
   "cycle_duration": 60
 }
+
 D. GET http://localhost:1234/api/v1/protected/data -> Protected Endpoint

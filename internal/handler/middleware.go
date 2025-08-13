@@ -13,12 +13,14 @@ func RateLimiterMiddleware(useCase usecase.RateLimiterUseCase) echo.MiddlewareFu
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 
+			ctx := c.Request().Context()
+
 			clientID := c.Request().Header.Get("X-Client-ID")
 			if clientID == "" {
 				clientID = c.RealIP()
 			}
 
-			allowed, remaining, resetTime := useCase.CheckRateLimit(clientID)
+			allowed, remaining, resetTime := useCase.CheckRateLimit(ctx, clientID)
 
 			c.Response().Header().Set("X-RateLimit-Limit", "100")
 			c.Response().Header().Set("X-RateLimit-Remaining", strconv.Itoa(remaining))

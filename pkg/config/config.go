@@ -1,26 +1,35 @@
 package config
 
 import (
+	"log"
 	"os"
 	"strconv"
-	"time"
+
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	ServerPort         string
-	RedisURL           string
-	UseRedis           bool
-	DefaultWindowSize  time.Duration
-	DefaultMaxRequests int
+	ServerPort           string
+	UseRedis             bool
+	RedisURL             string
+	RedisPassword        string
+	DefaultCycleDuration int
+	DefaultMaxRequests   int
 }
 
 func LoadConfig() *Config {
+
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found")
+	}
+
 	cfg := &Config{
-		ServerPort:         getEnv("SERVER_PORT", "1234"),
-		RedisURL:           getEnv("REDIS_URL", "redis://localhost:6379"),
-		UseRedis:           getEnvAsBool("USE_REDIS", false),
-		DefaultWindowSize:  getEnvAsDuration("DEFAULT_CYCLE_DURATION", 60*time.Second),
-		DefaultMaxRequests: getEnvAsInt("DEFAULT_MAX_REQUESTS", 100),
+		ServerPort:           getEnv("SERVER_PORT", "8080"),
+		UseRedis:             getEnvAsBool("USE_REDIS", false),
+		RedisURL:             getEnv("REDIS_URL", "redis://localhost:6379"),
+		RedisPassword:        getEnv("REDIS_PASSWORD", ""),
+		DefaultCycleDuration: getEnvAsInt("DEFAULT_CYCLE_DURATION", 1),
+		DefaultMaxRequests:   getEnvAsInt("DEFAULT_MAX_REQUESTS", 100),
 	}
 
 	return cfg
@@ -37,15 +46,6 @@ func getEnvAsBool(key string, value bool) bool {
 	if v := os.Getenv(key); v != "" {
 		if boolVal, err := strconv.ParseBool(v); err == nil {
 			return boolVal
-		}
-	}
-	return value
-}
-
-func getEnvAsDuration(key string, value time.Duration) time.Duration {
-	if v := os.Getenv(key); v != "" {
-		if duration, err := time.ParseDuration(v); err == nil {
-			return duration
 		}
 	}
 	return value

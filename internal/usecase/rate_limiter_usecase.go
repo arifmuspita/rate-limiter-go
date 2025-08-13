@@ -1,35 +1,45 @@
 package usecase
 
-import "rate-limiter-go/internal/repository/memory"
+import (
+	"context"
+	"rate-limiter-go/internal/repository"
+	"sync"
+)
 
 type RateLimiterUseCase interface {
-	CheckRateLimit(clientID string) (allowed bool, remaining int, resetTime int64)
-	ConfigureRateLimit(clientID string, maxRequests int, windowSizeMin int) error
+	CheckRateLimit(ctx context.Context, clientID string) (allowed bool, remaining int, resetTime int64)
+	ConfigureRateLimit(ctx context.Context, clientID string, maxRequests int, windowSizeMin int) error
 }
 
 type rateLimiterUseCase struct {
-	repo *memory.RateLimiterRepository
+	repo repository.RateLimiterRepository
+	mu   sync.Mutex
 }
 
-func NewRateLimiterUseCase(repo *memory.RateLimiterRepository) RateLimiterUseCase {
+func NewRateLimiterUseCase(repo repository.RateLimiterRepository) RateLimiterUseCase {
 	return &rateLimiterUseCase{
 		repo: repo,
 	}
 }
 
-func (uc *rateLimiterUseCase) CheckRateLimit(clientID string) (allowed bool, remaining int, resetTime int64) {
+func (uc *rateLimiterUseCase) CheckRateLimit(ctx context.Context, clientID string) (allowed bool, remaining int, resetTime int64) {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
 
-	rateLimit, exists := uc.repo.Get(clientID)
+	rateLimit, exists, err := uc.repo.Get(ctx, clientID)
+	if err != nil {
+		rateLimit = uc.repo.CreateDefault(ctx, clientID)
+	}
 	if !exists {
-		rateLimit = uc.repo.Add(clientID)
-		uc.repo.Save(rateLimit)
+		rateLimit = uc.repo.CreateDefault(ctx, clientID)
+		uc.repo.Save(ctx, rateLimit)
 	}
 
 	allowed = rateLimit.IsAllowed()
 
 	if allowed {
 		rateLimit.Increment()
-		uc.repo.Save(rateLimit)
+		uc.repo.Save(ctx, rateLimit)
 	}
 
 	remaining = rateLimit.GetRemainingRequests()
@@ -38,14 +48,20 @@ func (uc *rateLimiterUseCase) CheckRateLimit(clientID string) (allowed bool, rem
 	return allowed, remaining, resetTime
 }
 
-func (uc *rateLimiterUseCase) ConfigureRateLimit(clientID string, maxRequests int, windowSizeMin int) error {
-	rateLimit, exists := uc.repo.Get(clientID)
+func (uc *rateLimiterUseCase) ConfigureRateLimit(ctx context.Context, clientID string, maxRequests int, cycleDurationMin int) error {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
+	rateLimit, exists, err := uc.repo.Get(ctx, clientID)
+	if err != nil {
+		return err
+	}
 	if !exists {
-		rateLimit = uc.repo.Add(clientID)
+		rateLimit = uc.repo.CreateDefault(ctx, clientID)
 	}
 
 	rateLimit.MaxRequests = maxRequests
-	rateLimit.CycleDuration = windowSizeMin
+	rateLimit.CycleDuration = cycleDurationMin
 
-	return uc.repo.Save(rateLimit)
+	return uc.repo.Save(ctx, rateLimit)
 }

@@ -19,12 +19,15 @@ func NewRateLimiterHandler(useCase usecase.RateLimiterUseCase) *RateLimiterHandl
 }
 
 func (h *RateLimiterHandler) CheckRateLimit(c echo.Context) error {
+
+	ctx := c.Request().Context()
+
 	clientID := c.Param("clientID")
 	if clientID == "" {
 		return response.Error(c, http.StatusBadRequest, "Client ID required")
 	}
 
-	allowed, remaining, resetTime := h.useCase.CheckRateLimit(clientID)
+	allowed, remaining, resetTime := h.useCase.CheckRateLimit(ctx, clientID)
 
 	return response.Success(c, map[string]interface{}{
 		"allowed":   allowed,
@@ -34,6 +37,9 @@ func (h *RateLimiterHandler) CheckRateLimit(c echo.Context) error {
 }
 
 func (h *RateLimiterHandler) ConfigureRateLimit(c echo.Context) error {
+
+	ctx := c.Request().Context()
+
 	clientID := c.Param("clientID")
 	if clientID == "" {
 		return response.Error(c, http.StatusBadRequest, "Client ID required")
@@ -52,7 +58,7 @@ func (h *RateLimiterHandler) ConfigureRateLimit(c echo.Context) error {
 		return response.Error(c, http.StatusBadRequest, "Invalid configuration values")
 	}
 
-	err := h.useCase.ConfigureRateLimit(clientID, req.MaxRequests, req.CycleDuration)
+	err := h.useCase.ConfigureRateLimit(ctx, clientID, req.MaxRequests, req.CycleDuration)
 	if err != nil {
 		return response.Error(c, http.StatusInternalServerError, "Failed to configure rate limit")
 	}

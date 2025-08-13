@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  rate-limiter:
+    build: .
+    ports:
+      - "1234:1234"
+    environment:
+      - SERVER_PORT=1234
+      - USE_REDIS=true
+      - REDIS_URL=redis://redis:6379
+      - REDIS_PASSWORD=rahasia123
+      - DEFAULT_CYCLE_DURATION=1m
+      - DEFAULT_MAX_REQUESTS=100
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7
+    container_name: redis-rate-limiter
+    command: redis-server --requirepass rahasia123 --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+volumes:
+  redis-data:

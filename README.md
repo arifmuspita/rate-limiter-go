@@ -8,14 +8,11 @@ Kebutuhan
         App: 1234
         Redis: 6379
 
-1. Env
-Buat file .env dari .env.example
-
-2. Build & Run dengan Docker
+1. Build & Run dengan Docker
 docker-compose build --no-cache
 docker-compose up -d
 
-3. Running apps
+2. Running apps
 
     A. GET http://localhost:1234/ -> Health Check
 
